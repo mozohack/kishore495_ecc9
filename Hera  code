@@ -1,0 +1,101 @@
+#include <SoftwareSerial.h>
+#include <String.h>
+SoftwareSerial gsm(7,8);         //8->RX  7->TX
+char text[180];                   //TEXT CHAR HOLDS THE TEXT TO SENT TO GSM MODULE      
+char latt[10],lon[10];             //string to hold the latitude and longitude
+float flat = 12.975360,flon = 80.190125;
+ char buff[64];
+int count;
+
+volatile char MsgMob[15] ={'+','9','1','9','9','0','2','7','6','8','1','9','8','"'};
+char numt[64];
+
+//reciever and parse variables
+/*
+char numt[64];
+char RcvdMsg[200] = " ";
+int RcvdCheck = 0;
+int RcvdConf = 0;
+int index = 0;
+int RcvdEnd = 0;
+char MsgMob[15] = {'+','0','0','0','0','0','0','0','0','0','0','0','0','"'};
+char MsgTxt[50]=" ";
+int MsgLength = 3;
+boolean flag=false;
+int a = 0; 
+int a1;
+
+*/
+void setup() {
+ 
+  Serial.begin(9600);
+  gsm.begin(9600);
+  delay(500);	
+  /*
+  String num = ((String)"AT+CMGS=\""+MsgMob[0]+MsgMob[1]+MsgMob[2]+MsgMob[3]+MsgMob[4]+MsgMob[5]+MsgMob[6]+MsgMob[7]+MsgMob[8]+MsgMob[9]+MsgMob[10]+MsgMob[11]+MsgMob[12]+MsgMob[13]+MsgMob[14]);     
+  strcpy(numt,num.c_str());
+  Serial.println(numt);
+   */
+  
+  gsm.println("AT+CSQ");  //Signal Quality Report
+  delay(2000);
+ ShowSerialData();         //uncomment for debugging
+ gsm.println("AT+CREG?");  //Attach or Detach  from Gprs Service
+ delay(2000);
+ ShowSerialData();
+ gsm.println("AT+CMGF=1");  
+ delay(2000);
+ ShowSerialData();
+ gsm.println("AT+CNMI=1,2,0,0,0");  
+ delay(2000);
+ ShowSerialData();
+  gsm_send_sms(numt);
+}
+
+void loop() {
+      
+   }
+
+
+  
+
+//function to send sms 
+void gsm_send_sms(char *st)  //a variable named a will hold the text message to be sent
+{
+  gsm.write(0x1a);
+  gsm.println("AT");
+  ShowSerialData();
+  gsm.println("ATZ");                       //software reset for sim900a module which resets to user defined profiles
+  ShowSerialData();
+  delay(500);                              //optimum delay for the sim900a to respond
+  gsm.println("AT+CMGF=1");                 //sets the sim900a module to message sending mode
+  delay(500);
+  ShowSerialData();
+  gsm.println("AT+CMGS=\"+919902768198\"");     //"AT+CMGS=\"+91<india country code><10 digit cellphone number>\""
+  /*
+  for(int i=0;i<sizeof(st);i++)
+  {
+  gsm.println(st);     //"AT+CMGS=\"+91<india country code><10 digit cellphone number>\""
+  }
+  */
+  ShowSerialData();
+  delay(500);
+  
+  dtostrf(flat,1,6,latt);      //float values cant be sent to mobile phone so it has to be converted to string dtostrf converts it into a string
+  dtostrf(flon,1,6,lon);      //float values cant be sent to mobile phone so it has to be converted to string dtostrf converts it into a string
+  String textsms = ((String)"https://maps.google.com/?q=12.824586,80.046841");//then the latitude and longitude string has to be added to the url of the google maps
+  strcpy(text,textsms.c_str());//the text sms is the copied to the text variable which is a char variable
+  gsm.println(text);
+  gsm.write(0x1a);//0x1a is the ascii code for ctrl+z which indicates the gsm module the message has been completed
+ 
+  delay(500);//the text should sent from gsm module to cellphone   
+  ShowSerialData();
+  delay(500);
+  ShowSerialData();
+}
+
+void ShowSerialData()
+{
+  while(gsm.available()!=0)
+   Serial.write(gsm.read());
+}
