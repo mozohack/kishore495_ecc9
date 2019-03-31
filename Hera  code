@@ -83,7 +83,7 @@ void gsm_send_sms(char *st)  //a variable named a will hold the text message to 
   
   dtostrf(flat,1,6,latt);      //float values cant be sent to mobile phone so it has to be converted to string dtostrf converts it into a string
   dtostrf(flon,1,6,lon);      //float values cant be sent to mobile phone so it has to be converted to string dtostrf converts it into a string
-  String textsms = ((String)"https://maps.google.com/?q=12.824586,80.046841");//then the latitude and longitude string has to be added to the url of the google maps
+  String textsms = ((String)"https://maps.google.com/?q=latt,lon");//then the latitude and longitude string has to be added to the url of the google maps
   strcpy(text,textsms.c_str());//the text sms is the copied to the text variable which is a char variable
   gsm.println(text);
   gsm.write(0x1a);//0x1a is the ascii code for ctrl+z which indicates the gsm module the message has been completed
